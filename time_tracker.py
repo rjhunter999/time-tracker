@@ -42,7 +42,7 @@ def main():
     parser.add_argument("--save-to", type=str, default="", help="In addition to usual save, save to this path as well (e.g. at end of week, or backup.")
     for task in targets.keys():
         parser.add_argument(f'--{task}', type=float, default=0, help=f"Add this much time (in minutes) to {task}.")
-        parser.add_argument(f'--reset-{task}', type=int, help=f"Reset time spent on {task} to value (in hours).")
+        parser.add_argument(f'--reset-{task}', type=float, help=f"Reset time spent on {task} to value (in hours).")
 
     args = parser.parse_args()
 
@@ -89,7 +89,7 @@ def main():
     total_spent = sum(current.values(), start=timedelta(0))
     pct = 100 * total_spent / timedelta(hours=WORKING_HOURS)
     working_days_spent = total_spent/timedelta(hours=WORKING_DAY)
-    print(f"Total working hours spent: {_to_hrs(total_spent)}/{WORKING_HOURS} ({working_days_spent:.2f} days, or {pct:.1f}% of the working week).")
+    print(f"Total working hours spent: {_to_hrs(total_spent):.2f}/{WORKING_HOURS} ({working_days_spent:.2f} days, or {pct:.1f}% of the working week).")
 
 
     # Save to file
