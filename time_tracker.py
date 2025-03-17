@@ -101,7 +101,7 @@ def main():
     if args.save_to:
         with open(args.save_to, "w") as f:
             json.dump(writeable, f, indent=4)
-        print(f"Also written results to {file_path}")
+        print(f"Also written results to {args.save_to}")
     
 
 if __name__ == "__main__":
