@@ -4,38 +4,37 @@ import json
 import argparse
 import os
 import math
+from collections import namedtuple
 
 WORKING_HOURS = 37.5
 WORKING_DAY = WORKING_HOURS / 5
-targets = {
-    "AnaDull": 4,
-    "AnaCool": 8,
-    "Helping": 1,
-    "Faff": 3,
-    "CPD": 4,
-    "RTA": 4,
-    "QEE": 2,
-    "Luke": 4,
-    "Meetings": 4,
-}
 LUNCH = 3.5
+TARGETS_PATH = "config/targets.json"
 
-if sum(targets.values()) != WORKING_HOURS - LUNCH:
-    raise ValueError(f"You're not working the correct amount of hours! Working: {sum(targets.values())}.")
+PrintConfig = namedtuple("PrintConfig", ["max_bar_width", "max_key_length"])
 
-print_width = int(math.lcm(*list(targets.values())))
-max_key_length = max([len(t) for t in targets.keys()])
 
-dt_targets = {k: timedelta(hours=v) for k, v in targets.items()}
-
-def progress_bar(task: str, current: timedelta, target: timedelta) -> None:
+def progress_bar(task: str, current: timedelta, target: timedelta, config: PrintConfig) -> None:
     frac_filled = (current / target)
-    bar_width = int(frac_filled * print_width)
-    remaining = print_width - bar_width
+    bar_width = int(frac_filled * config.max_bar_width)
+    remaining = config.max_bar_width - bar_width
     bar = '█' * bar_width + '-' * remaining
-    print(f"{task.ljust(max_key_length)}:|{bar}| {frac_filled*100:.1f}% ({current})")
+    print(f"{task.ljust(config.max_key_length)}:|{bar}| {frac_filled*100:.1f}% ({current})")
+
 
 def main():
+    # Load up the targets and autogenerate args accordingly
+    with open(TARGETS_PATH, "r") as f:
+        targets = json.load(f)
+
+    if sum(targets.values()) != WORKING_HOURS - LUNCH:
+        raise ValueError(f"You're not working the correct amount of hours! Working: {sum(targets.values())}.")
+
+    max_bar_width = int(math.lcm(*list(targets.values())))
+    max_key_length = max([len(t) for t in targets.keys()])
+    print_config = PrintConfig(max_bar_width, max_key_length)
+    dt_targets = {k: timedelta(hours=v) for k, v in targets.items()}
+    
     parser = argparse.ArgumentParser()
     parser.add_argument("--show", action='store_true', help='Print the time-tracking summary')
     parser.add_argument("--clean", action='store_true', help='Reset all values to 0')
@@ -47,8 +46,7 @@ def main():
     args = parser.parse_args()
 
     # Load up the current weekly set of times
-    # TODO add a --clean to start again for a week
-    file_path = "time_tracking.json"
+    file_path = "data/current.json"
     if os.path.exists(file_path):
         with open(file_path, "r") as f:
             raw = json.load(f)
@@ -82,9 +80,9 @@ def main():
 
     if args.show:
         print("Current summary of time tracking...")
-        print(f"The bar width (LCM) will be {print_width}")
+        print(f"The bar width (LCM) will be {print_config.max_bar_width}")
         for task, tgt in dt_targets.items():
-            progress_bar(task, current[task], tgt)
+            progress_bar(task, current[task], tgt, print_config)
 
     total_spent = sum(current.values(), start=timedelta(0))
     pct = 100 * total_spent / timedelta(hours=WORKING_HOURS)
