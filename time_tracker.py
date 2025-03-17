@@ -31,6 +31,9 @@ def main():
         raise ValueError(f"You're not working the correct amount of hours! Working: {sum(targets.values())}.")
 
     max_bar_width = int(math.lcm(*list(targets.values())))
+    while max_bar_width < 10:
+        # Make it a bit bigger and more satisfying
+        max_bar_width *= 2
     max_key_length = max([len(t) for t in targets.keys()])
     print_config = PrintConfig(max_bar_width, max_key_length)
     dt_targets = {k: timedelta(hours=v) for k, v in targets.items()}
