@@ -39,7 +39,6 @@ def main():
     dt_targets = {k: timedelta(hours=v) for k, v in targets.items()}
     
     parser = argparse.ArgumentParser()
-    parser.add_argument("--show", action='store_true', help='Print the time-tracking summary')
     parser.add_argument("--clean", action='store_true', help='Reset all values to 0')
     parser.add_argument("--save-to", type=str, default="", help="In addition to usual save, save to this path as well (e.g. at end of week, or backup.")
     for task in targets.keys():
@@ -66,7 +65,7 @@ def main():
                     return
                 else:
                     continue
-            elif arg in ['show', 'save_to']:
+            elif arg in ['save_to']:
                 continue
             elif 'reset' in arg:
                 task = arg.split('_')[-1]
@@ -81,11 +80,10 @@ def main():
     def _to_hrs(dtime: timedelta):
         return float(dtime.total_seconds() / 3600)
 
-    if args.show:
-        print("Current summary of time tracking...")
-        print(f"The bar width (LCM) will be {print_config.max_bar_width}")
-        for task, tgt in dt_targets.items():
-            progress_bar(task, current[task], tgt, print_config)
+    print("Current summary of time tracking...")
+    print(f"The bar width (LCM) will be {print_config.max_bar_width}")
+    for task, tgt in dt_targets.items():
+        progress_bar(task, current[task], tgt, print_config)
 
     total_spent = sum(current.values(), start=timedelta(0))
     pct = 100 * total_spent / timedelta(hours=WORKING_HOURS)
